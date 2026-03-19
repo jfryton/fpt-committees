@@ -34,7 +34,7 @@ const defaultForm: CommitteeUpsertPayload = {
 function CommitteePage() {
   const { t } = useI18n();
   const { committeeId } = useParams({
-    from: "/authenticated/committee/$committeeId"
+    from: "/app/committee/$committeeId"
   });
   const [form, setForm] = useState<CommitteeUpsertPayload>(defaultForm);
   const [saved, setSaved] = useState(false);

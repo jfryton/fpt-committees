@@ -5,7 +5,6 @@ import { sessionQueryOptions } from "@/features/auth/session";
 
 export const authenticatedRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "authenticated",
   path: "/app",
   beforeLoad: async () => {
     const session = await queryClient.ensureQueryData(sessionQueryOptions);
