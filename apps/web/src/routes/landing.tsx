@@ -36,7 +36,7 @@ function LandingPage() {
   });
 
   useEffect(() => {
-    if (token && !exchangeMutation.isPending && !exchangeMutation.isSuccess) {
+    if (token && !exchangeMutation.isPending && !exchangeMutation.isSuccess && !exchangeMutation.isError) {
       exchangeMutation.mutate(token);
     }
   }, [token, exchangeMutation]);

@@ -18,6 +18,7 @@ import {
   importJobs,
   sessions,
 } from "../db/schema.js";
+import { sha256 } from "../utils/crypto.js";
 import { newId } from "../utils/ids.js";
 import type { AuditEntry, DataStore, GrantRecord, SessionLookup, SessionRecord } from "./data-store.js";
 import { canReadCommittee, canWriteCommittee, normalizeGrant } from "./data-store.js";
@@ -492,6 +493,7 @@ export const createPostgresStore = async (): Promise<PostgresStore> => {
 
   const [grantCount] = await db.select({ count: accessGrants.id }).from(accessGrants);
   if (!grantCount?.count && !env.ACCESS_LINK_PEPPER.startsWith("change-me")) {
+    const initialAdminTokenHash = sha256(`${env.INITIAL_ADMIN_TOKEN}:${env.ACCESS_LINK_PEPPER}`);
     await store.createGrant({
       payload: {
         displayName: "Initial Admin",
@@ -500,8 +502,8 @@ export const createPostgresStore = async (): Promise<PostgresStore> => {
         committeeIds: [],
         expiresAt: null,
       },
-      tokenHash: env.ACCESS_LINK_PEPPER,
-      accessLink: `${env.APP_BASE_URL}#/`,
+      tokenHash: initialAdminTokenHash,
+      accessLink: `${env.APP_BASE_URL}#/?token=${encodeURIComponent(env.INITIAL_ADMIN_TOKEN)}`,
     });
   }
 
