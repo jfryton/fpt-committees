@@ -1,0 +1,26 @@
+{
+  "name": "fpt-committees",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspace @fpt-committees/api && npm run build --workspace @fpt-committees/web",
+    "dev": "npm run dev --workspace @fpt-committees/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspace @fpt-committees/shared && npm run typecheck --workspace @fpt-committees/api && npm run typecheck --workspace @fpt-committees/web",
+    "test": "npm run test --workspaces --if-present",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}

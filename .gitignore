@@ -1,0 +1,11 @@
+node_modules
+dist
+.DS_Store
+.env
+.env.*
+coverage
+.turbo
+.vite
+apps/api/drizzle
+apps/api/.data
+*.tsbuildinfo

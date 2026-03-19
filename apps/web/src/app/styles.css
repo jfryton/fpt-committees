@@ -1,0 +1,241 @@
+:root {
+  --bg: #f1f5f9;
+  --bg-accent: #dbeafe;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --ring: #2563eb;
+  --border: #cbd5e1;
+  --primary: #1d4ed8;
+  --primary-contrast: #eff6ff;
+  --danger: #b91c1c;
+  font-family: "Outfit", "Manrope", "Avenir Next", sans-serif;
+  line-height: 1.4;
+  color: var(--text);
+  background: radial-gradient(circle at 30% -10%, var(--bg-accent), var(--bg));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1rem 5.25rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, #ffffff 10%);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.08);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.text-input,
+.text-area,
+.select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.62rem 0.78rem;
+  font: inherit;
+  background: #fff;
+  color: var(--text);
+}
+
+.text-area {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.text-input:focus,
+.text-area:focus,
+.select:focus {
+  outline: 2px solid color-mix(in srgb, var(--ring) 25%, transparent);
+  border-color: var(--ring);
+}
+
+.btn {
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+
+.btn-secondary {
+  border-color: var(--border);
+  background: #fff;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.space-between {
+  justify-content: space-between;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 99px;
+  padding: 0.22rem 0.62rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.topbar {
+  position: sticky;
+  top: 0.4rem;
+  z-index: 30;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, #ffffff 87%, #e2e8f0 13%);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0.8rem;
+  width: min(560px, calc(100vw - 1rem));
+  background: color-mix(in srgb, #ffffff 90%, #cbd5e1 10%);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  z-index: 40;
+  backdrop-filter: blur(14px);
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.25rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.nav-link[data-active="true"] {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.alert {
+  border-radius: 0.8rem;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  padding: 0.72rem;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 880px) {
+  .app-shell {
+    padding: 1.2rem 1.4rem 1.8rem;
+  }
+
+  .bottom-nav {
+    position: sticky;
+    transform: none;
+    left: auto;
+    width: fit-content;
+    margin-left: auto;
+    margin-top: 0.8rem;
+  }
+}
