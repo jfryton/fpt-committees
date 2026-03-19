@@ -5,7 +5,7 @@ import { rootRoute } from "@/routes/root";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/lib/i18n";
-import { api } from "@/lib/api";
+import { api, sessionTokenStore } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 
 type LandingSearch = {
@@ -32,7 +32,8 @@ function LandingPage() {
 
   const exchangeMutation = useMutation({
     mutationFn: (tokenValue: string) => api.exchangeToken(tokenValue),
-    onSuccess: async () => {
+    onSuccess: async (payload) => {
+      await sessionTokenStore.set(payload.sessionToken);
       await queryClient.invalidateQueries({ queryKey: ["session"] });
       window.history.replaceState({}, "", `${window.location.pathname}${window.location.hash.split("?")[0] ?? "#/"}`);
       void navigate({ to: "/app/directory" });
@@ -41,7 +42,8 @@ function LandingPage() {
 
   const bootstrapMutation = useMutation({
     mutationFn: () => api.bootstrap(),
-    onSuccess: async () => {
+    onSuccess: async (payload) => {
+      await sessionTokenStore.set(payload.sessionToken);
       await queryClient.invalidateQueries({ queryKey: ["session"] });
       await queryClient.invalidateQueries({ queryKey: ["bootstrap-status"] });
       void navigate({ to: "/app/directory" });

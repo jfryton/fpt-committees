@@ -56,7 +56,11 @@ await app.register(cookie, {
 app.decorateRequest("auth", null);
 
 app.addHook("preHandler", async (request) => {
-  const sessionToken = request.cookies[env.SESSION_COOKIE_NAME];
+  const authorizationHeader = request.headers.authorization;
+  const bearerToken = authorizationHeader?.startsWith("Bearer ")
+    ? authorizationHeader.slice("Bearer ".length).trim()
+    : null;
+  const sessionToken = bearerToken || request.cookies[env.SESSION_COOKIE_NAME];
   if (!sessionToken) {
     request.auth = null;
     return;
@@ -167,6 +171,7 @@ app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> 
 
   return {
     ok: true,
+    sessionToken: rawSessionToken,
     actor: {
       grantId: grant.id,
       displayName: grant.displayName,
@@ -215,6 +220,7 @@ app.post("/auth/bootstrap", async (request, reply): Promise<AuthExchangePayload 
 
   return {
     ok: true,
+    sessionToken: rawSessionToken,
     actor: {
       grantId: grant.id,
       displayName: grant.displayName,

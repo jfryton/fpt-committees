@@ -71,6 +71,7 @@ export type BootstrapStatusPayload = {
 
 export type AuthExchangePayload = {
   ok: true;
+  sessionToken: string;
   actor: SessionActor;
 };
 

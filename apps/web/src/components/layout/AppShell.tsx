@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { Building2, Shield, SquarePen } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { startTransition } from "react";
-import { api } from "@/lib/api";
+import { api, sessionTokenStore } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import { sessionQueryOptions } from "@/features/auth/session";
 import { queryClient } from "@/lib/queryClient";
@@ -21,6 +21,7 @@ export function AppShell() {
   const logoutMutation = useMutation({
     mutationFn: () => api.logout(),
     onSuccess: async () => {
+      await sessionTokenStore.clear();
       await queryClient.invalidateQueries({ queryKey: ["session"] });
       startTransition(() => {
         void navigate({ to: "/" });

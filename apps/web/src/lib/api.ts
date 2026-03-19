@@ -1,4 +1,5 @@
 import type { AccessGrant, CommitteeRecord, CreatedGrantPayload } from "@fpt-committees/shared";
+import { get, set, del } from "idb-keyval";
 import type {
   AuthExchangePayload,
   BootstrapStatusPayload,
@@ -8,6 +9,7 @@ import type {
 } from "@/lib/types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || "/api";
+const SESSION_TOKEN_KEY = "fpt.session-token";
 
 class ApiError extends Error {
   status: number;
@@ -20,6 +22,10 @@ class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers ?? {});
+  const sessionToken = await get<string>(SESSION_TOKEN_KEY);
+  if (sessionToken && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${sessionToken}`);
+  }
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
@@ -84,6 +90,11 @@ export const api = {
     request<AccessGrant>(`/grants/${grantId}/revoke`, {
       method: "POST"
     })
+};
+
+export const sessionTokenStore = {
+  set: (token: string) => set(SESSION_TOKEN_KEY, token),
+  clear: () => del(SESSION_TOKEN_KEY)
 };
 
 export { ApiError };
