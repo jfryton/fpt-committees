@@ -7,7 +7,6 @@ import { useI18n } from "@/lib/i18n";
 import { sessionQueryOptions } from "@/features/auth/session";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/Button";
-import { PwaControls } from "@/components/layout/PwaControls";
 
 export function AppShell() {
   const { t, locale, setLocale } = useI18n();
@@ -60,7 +59,6 @@ export function AppShell() {
       </header>
 
       <main className="stack">
-        <PwaControls />
         <Outlet />
       </main>
 
