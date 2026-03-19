@@ -8,7 +8,7 @@ import type {
   SessionPayload
 } from "@/lib/types";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || "/api";
+const API_BASE = "/api";
 const SESSION_TOKEN_KEY = "fpt.session-token";
 
 class ApiError extends Error {

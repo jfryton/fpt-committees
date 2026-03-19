@@ -1,6 +1,9 @@
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parse as parseCsv } from "csv-parse/sync";
 import {
   type AuthExchangePayload,
@@ -44,13 +47,21 @@ const app = Fastify({
   logger: true,
 });
 
-await app.register(cors, {
-  origin: env.CORS_ORIGIN === "*" ? true : env.CORS_ORIGIN,
-  credentials: true,
-});
+const distDir = join(dirname(fileURLToPath(import.meta.url)), "../../web/dist");
+
+if (env.CORS_ORIGIN !== "same-origin") {
+  await app.register(cors, {
+    origin: env.CORS_ORIGIN === "*" ? true : env.CORS_ORIGIN,
+    credentials: true,
+  });
+}
 
 await app.register(cookie, {
   secret: env.SESSION_SECRET,
+});
+
+await app.register(fastifyStatic, {
+  root: distDir,
 });
 
 app.decorateRequest("auth", null);
@@ -81,11 +92,11 @@ app.addHook("preHandler", async (request) => {
   };
 });
 
-app.get("/health", async () => ({
+app.get("/api/health", async () => ({
   ok: true,
 }));
 
-app.get("/auth/session", async (request, reply): Promise<SessionPayload> => {
+app.get("/api/auth/session", async (request, reply): Promise<SessionPayload> => {
   if (!request.auth) {
     return {
       authenticated: false,
@@ -118,7 +129,7 @@ app.get("/auth/session", async (request, reply): Promise<SessionPayload> => {
   };
 });
 
-app.get("/auth/bootstrap", async (): Promise<BootstrapStatusPayload> => {
+app.get("/api/auth/bootstrap", async (): Promise<BootstrapStatusPayload> => {
   const store = await getStore();
   const grant = await store.getBootstrapGrant();
   return {
@@ -126,7 +137,7 @@ app.get("/auth/bootstrap", async (): Promise<BootstrapStatusPayload> => {
   };
 });
 
-app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> => {
+app.post("/api/auth/exchange", async (request, reply): Promise<AuthExchangePayload> => {
   const { token } = ExchangeSchema.parse(request.body ?? {});
   const store = await getStore();
   const grant = await store.findGrantByTokenHash(sha256(`${token}:${env.ACCESS_LINK_PEPPER}`));
@@ -182,7 +193,7 @@ app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> 
   };
 });
 
-app.post("/auth/bootstrap", async (request, reply): Promise<AuthExchangePayload | { message: string }> => {
+app.post("/api/auth/bootstrap", async (request, reply): Promise<AuthExchangePayload | { message: string }> => {
   const store = await getStore();
   const grant = await store.getBootstrapGrant();
 
@@ -231,7 +242,7 @@ app.post("/auth/bootstrap", async (request, reply): Promise<AuthExchangePayload 
   };
 });
 
-app.post("/auth/logout", async (request, reply) => {
+app.post("/api/auth/logout", async (request, reply) => {
   if (request.auth) {
     const store = await getStore();
     await store.revokeSession(request.auth.sessionId);
@@ -255,7 +266,7 @@ app.post("/auth/logout", async (request, reply) => {
   return reply.code(204).send();
 });
 
-app.get("/committees", async (request, reply) => {
+app.get("/api/committees", async (request, reply) => {
   if (!request.auth) {
     return reply.code(401).send({ message: "Authentication required." });
   }
@@ -270,7 +281,7 @@ app.get("/committees", async (request, reply) => {
   });
 });
 
-app.get("/committees/:committeeId", async (request, reply) => {
+app.get("/api/committees/:committeeId", async (request, reply) => {
   if (!request.auth) {
     return reply.code(401).send({ message: "Authentication required." });
   }
@@ -295,7 +306,7 @@ app.get("/committees/:committeeId", async (request, reply) => {
   return committee;
 });
 
-app.put("/committees/:committeeId", async (request, reply) => {
+app.put("/api/committees/:committeeId", async (request, reply) => {
   if (!request.auth) {
     return reply.code(401).send({ message: "Authentication required." });
   }
@@ -334,7 +345,7 @@ app.put("/committees/:committeeId", async (request, reply) => {
   return updated;
 });
 
-app.get("/grants", async (request, reply) => {
+app.get("/api/grants", async (request, reply) => {
   if (!request.auth || request.auth.role !== "admin") {
     return reply.code(403).send({ message: "Admin access required." });
   }
@@ -343,7 +354,7 @@ app.get("/grants", async (request, reply) => {
   return store.listGrants();
 });
 
-app.post("/grants", async (request, reply): Promise<CreatedGrantPayload | { message: string }> => {
+app.post("/api/grants", async (request, reply): Promise<CreatedGrantPayload | { message: string }> => {
   if (!request.auth || request.auth.role !== "admin") {
     return reply.code(403).send({ message: "Admin access required." });
   }
@@ -375,7 +386,7 @@ app.post("/grants", async (request, reply): Promise<CreatedGrantPayload | { mess
   return created;
 });
 
-app.post("/grants/:grantId/revoke", async (request, reply) => {
+app.post("/api/grants/:grantId/revoke", async (request, reply) => {
   if (!request.auth || request.auth.role !== "admin") {
     return reply.code(403).send({ message: "Admin access required." });
   }
@@ -400,7 +411,7 @@ app.post("/grants/:grantId/revoke", async (request, reply) => {
   return revoked;
 });
 
-app.post("/imports/committees", async (request, reply) => {
+app.post("/api/imports/committees", async (request, reply) => {
   if (!request.auth || request.auth.role !== "admin") {
     return reply.code(403).send({ message: "Admin access required." });
   }
@@ -436,7 +447,7 @@ app.post("/imports/committees", async (request, reply) => {
   return result;
 });
 
-app.get("/audit-logs", async (request, reply) => {
+app.get("/api/audit-logs", async (request, reply) => {
   if (!request.auth || request.auth.role !== "admin") {
     return reply.code(403).send({ message: "Admin access required." });
   }
@@ -467,6 +478,14 @@ app.setErrorHandler((error, _request, reply) => {
   reply.code(500).send({
     message: "Internal server error.",
   });
+});
+
+app.setNotFoundHandler((request, reply) => {
+  if (request.url.startsWith("/api/")) {
+    return reply.code(404).send({ message: "Not found." });
+  }
+
+  return reply.sendFile("index.html");
 });
 
 const start = async () => {
