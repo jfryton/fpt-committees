@@ -1,5 +1,4 @@
 import type { AccessGrant, CommitteeRecord, CreatedGrantPayload } from "@fpt-committees/shared";
-import { get, set, del } from "idb-keyval";
 import type {
   AuthExchangePayload,
   BootstrapStatusPayload,
@@ -10,6 +9,33 @@ import type {
 
 const API_BASE = "/api";
 const SESSION_TOKEN_KEY = "fpt.session-token";
+let sessionTokenMemory: string | null = null;
+
+function readStoredToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    return window.localStorage.getItem(SESSION_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredToken(token: string | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    if (token) {
+      window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+    } else {
+      window.localStorage.removeItem(SESSION_TOKEN_KEY);
+    }
+  } catch {
+    // Ignore storage failures and rely on memory for the active tab.
+  }
+}
 
 class ApiError extends Error {
   status: number;
@@ -22,7 +48,10 @@ class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers ?? {});
-  const sessionToken = await get<string>(SESSION_TOKEN_KEY);
+  const sessionToken = sessionTokenMemory ?? readStoredToken();
+  if (sessionToken && !sessionTokenMemory) {
+    sessionTokenMemory = sessionToken;
+  }
   if (sessionToken && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${sessionToken}`);
   }
@@ -93,8 +122,16 @@ export const api = {
 };
 
 export const sessionTokenStore = {
-  set: (token: string) => set(SESSION_TOKEN_KEY, token),
-  clear: () => del(SESSION_TOKEN_KEY)
+  set(token: string) {
+    sessionTokenMemory = token;
+    writeStoredToken(token);
+    return Promise.resolve();
+  },
+  clear() {
+    sessionTokenMemory = null;
+    writeStoredToken(null);
+    return Promise.resolve();
+  }
 };
 
 export { ApiError };

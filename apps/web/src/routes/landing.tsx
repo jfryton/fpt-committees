@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/lib/i18n";
 import { api, sessionTokenStore } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
+import type { SessionPayload } from "@/lib/types";
 
 type LandingSearch = {
   token?: string;
@@ -34,7 +35,10 @@ function LandingPage() {
     mutationFn: (tokenValue: string) => api.exchangeToken(tokenValue),
     onSuccess: async (payload) => {
       await sessionTokenStore.set(payload.sessionToken);
-      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.setQueryData<SessionPayload>(["session"], {
+        authenticated: true,
+        actor: payload.actor
+      });
       window.history.replaceState({}, "", `${window.location.pathname}${window.location.hash.split("?")[0] ?? "#/"}`);
       void navigate({ to: "/app/directory" });
     }
@@ -44,7 +48,10 @@ function LandingPage() {
     mutationFn: () => api.bootstrap(),
     onSuccess: async (payload) => {
       await sessionTokenStore.set(payload.sessionToken);
-      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.setQueryData<SessionPayload>(["session"], {
+        authenticated: true,
+        actor: payload.actor
+      });
       await queryClient.invalidateQueries({ queryKey: ["bootstrap-status"] });
       void navigate({ to: "/app/directory" });
     }
