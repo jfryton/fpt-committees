@@ -150,7 +150,7 @@ app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> 
 
   reply.setCookie(env.SESSION_COOKIE_NAME, rawSessionToken, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
     secure: env.NODE_ENV === "production",
     path: "/",
     maxAge: env.SESSION_TTL_HOURS * 60 * 60,
@@ -184,6 +184,8 @@ app.post("/auth/logout", async (request, reply) => {
   }
 
   reply.clearCookie(env.SESSION_COOKIE_NAME, {
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
     path: "/",
   });
 
