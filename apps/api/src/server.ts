@@ -4,6 +4,7 @@ import Fastify from "fastify";
 import { parse as parseCsv } from "csv-parse/sync";
 import {
   type AuthExchangePayload,
+  type BootstrapStatusPayload,
   type CommitteeUpsertPayload,
   type CreatedGrantPayload,
   type GrantCreatePayload,
@@ -113,6 +114,14 @@ app.get("/auth/session", async (request, reply): Promise<SessionPayload> => {
   };
 });
 
+app.get("/auth/bootstrap", async (): Promise<BootstrapStatusPayload> => {
+  const store = await getStore();
+  const grant = await store.getBootstrapGrant();
+  return {
+    bootstrapAvailable: Boolean(grant),
+  };
+});
+
 app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> => {
   const { token } = ExchangeSchema.parse(request.body ?? {});
   const store = await getStore();
@@ -140,6 +149,54 @@ app.post("/auth/exchange", async (request, reply): Promise<AuthExchangePayload> 
   await store.touchGrant(grant.id, new Date().toISOString());
   await store.writeAuditLog({
     action: "auth.exchange",
+    actorGrantId: grant.id,
+    actorSessionId: session.id,
+    committeeId: null,
+    targetType: "grant",
+    targetId: grant.id,
+    metadata: {},
+  });
+
+  reply.setCookie(env.SESSION_COOKIE_NAME, rawSessionToken, {
+    httpOnly: true,
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+    secure: env.NODE_ENV === "production",
+    path: "/",
+    maxAge: env.SESSION_TTL_HOURS * 60 * 60,
+  });
+
+  return {
+    ok: true,
+    actor: {
+      grantId: grant.id,
+      displayName: grant.displayName,
+      role: grant.role,
+      scopeMode: grant.scopeMode,
+      allowedCommitteeIds: grant.allowedCommitteeIds,
+    },
+  };
+});
+
+app.post("/auth/bootstrap", async (request, reply): Promise<AuthExchangePayload | { message: string }> => {
+  const store = await getStore();
+  const grant = await store.getBootstrapGrant();
+
+  if (!grant) {
+    return reply.code(403).send({
+      message: "Bootstrap is no longer available.",
+    });
+  }
+
+  const rawSessionToken = randomToken();
+  const session = await store.createSession({
+    tokenHash: sha256(rawSessionToken),
+    grantId: grant.id,
+    expiresAt: new Date(Date.now() + env.SESSION_TTL_HOURS * 60 * 60 * 1000).toISOString(),
+  });
+
+  await store.touchGrant(grant.id, new Date().toISOString());
+  await store.writeAuditLog({
+    action: "auth.bootstrap",
     actorGrantId: grant.id,
     actorSessionId: session.id,
     committeeId: null,

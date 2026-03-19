@@ -1,6 +1,7 @@
 import type { AccessGrant, CommitteeRecord, CreatedGrantPayload } from "@fpt-committees/shared";
 import type {
   AuthExchangePayload,
+  BootstrapStatusPayload,
   CommitteeUpsertPayload,
   GrantCreatePayload,
   SessionPayload
@@ -49,6 +50,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getSession: () => request<SessionPayload>("/auth/session"),
+  getBootstrapStatus: () => request<BootstrapStatusPayload>("/auth/bootstrap"),
+  bootstrap: () =>
+    request<AuthExchangePayload>("/auth/bootstrap", {
+      method: "POST"
+    }),
   exchangeToken: (token: string) =>
     request<AuthExchangePayload>("/auth/exchange", {
       method: "POST",

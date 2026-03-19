@@ -84,6 +84,38 @@ export class PostgresStore implements DataStore {
     return;
   }
 
+  async getBootstrapGrant(): Promise<GrantRecord | null> {
+    const rows = await db.select().from(accessGrants).orderBy(asc(accessGrants.createdAt)).limit(2);
+    if (rows.length !== 1) {
+      return null;
+    }
+
+    const [grant] = rows;
+    if (
+      !grant ||
+      grant.displayName !== "Initial Admin" ||
+      grant.role !== "admin" ||
+      grant.status !== "active"
+    ) {
+      return null;
+    }
+
+    const allowedCommitteeIds = await getGrantScopes(grant.id, grant.scopeMode);
+    return {
+      id: grant.id,
+      tokenHash: grant.tokenHash,
+      displayName: grant.displayName,
+      role: grant.role,
+      scopeMode: grant.scopeMode,
+      status: grant.status,
+      expiresAt: grant.expiresAt?.toISOString() ?? null,
+      lastUsedAt: grant.lastUsedAt?.toISOString() ?? null,
+      createdAt: grant.createdAt.toISOString(),
+      revokedAt: grant.revokedAt?.toISOString() ?? null,
+      allowedCommitteeIds,
+    };
+  }
+
   async findGrantByTokenHash(tokenHash: string): Promise<GrantRecord | null> {
     const [grant] = await db
       .select()

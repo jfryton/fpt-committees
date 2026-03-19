@@ -50,6 +50,7 @@ export type SessionLookup = {
 export interface DataStore {
   seed(): Promise<void>;
   findGrantByTokenHash(tokenHash: string): Promise<GrantRecord | null>;
+  getBootstrapGrant(): Promise<GrantRecord | null>;
   createSession(input: {
     tokenHash: string;
     grantId: string;

@@ -1,5 +1,6 @@
 export type {
   AuthExchangePayload,
+  BootstrapStatusPayload,
   CommitteeUpsertPayload,
   CreatedGrantPayload,
   GrantCreatePayload,

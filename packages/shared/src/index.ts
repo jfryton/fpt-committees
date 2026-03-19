@@ -65,6 +65,10 @@ export type SessionPayload = {
   actor: SessionActor | null;
 };
 
+export type BootstrapStatusPayload = {
+  bootstrapAvailable: boolean;
+};
+
 export type AuthExchangePayload = {
   ok: true;
   actor: SessionActor;
