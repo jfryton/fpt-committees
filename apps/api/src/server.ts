@@ -47,7 +47,7 @@ const app = Fastify({
   logger: true,
 });
 
-const distDir = join(dirname(fileURLToPath(import.meta.url)), "../../web/dist");
+const distDir = join(dirname(fileURLToPath(import.meta.url)), "../../../web/dist");
 
 if (env.CORS_ORIGIN !== "same-origin") {
   await app.register(cors, {
